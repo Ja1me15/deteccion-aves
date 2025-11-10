@@ -37,29 +37,6 @@ st.markdown(
     padding: 1.5rem 1.5rem 3rem 1.5rem;
 }
 
-/* Panel blanco */
-.panel {
-    background-color: #FFFFFF;
-    border-radius: 20px;
-    padding: 1.6rem 1.7rem;
-    box-shadow: 0 6px 14px rgba(0,0,0,0.12);
-    margin-top: 1.5rem;
-}
-
-/* Título dentro de cada panel */
-.panel-title {
-    font-size: 1.7rem;
-    font-weight: 800;
-    color: #000000;
-    display: flex;
-    align-items: center;
-    margin-bottom: 1.2rem;
-}
-
-.panel-title span {
-    margin-right: 10px;
-}
-
 /* CABECERA GENERAL */
 .header-container {
     text-align: center;
@@ -78,6 +55,20 @@ st.markdown(
     margin: 0;
     font-size: 1.05rem;
     color: #FFFFFF;
+}
+
+/* Títulos de secciones (Configuración / Resultados) */
+.section-title {
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: #000000;
+    display: flex;
+    align-items: center;
+    margin: 1.2rem 0 1rem 0;
+}
+
+.section-title span {
+    margin-right: 10px;
 }
 
 /* Botones */
@@ -107,7 +98,7 @@ st.markdown(
     background-color: rgba(255,255,255,0.9);
 }
 
-/* Caption de imagen */
+/* Caption de imagen (Imagen cargada correctamente) */
 div[data-testid="stImageCaption"] p,
 .stImage figcaption,
 .stImage p {
@@ -116,7 +107,7 @@ div[data-testid="stImageCaption"] p,
     text-align: center;
 }
 
-/* Compactar espacio entre alerta y sección de cargar imagen */
+/* Compactar espacio entre alerta y “Cargar imagen” */
 div[data-testid="stVerticalBlock"] > div:has(> .stAlert) {
     margin-bottom: 0.6rem !important;
 }
@@ -184,9 +175,8 @@ col_left, col_right = st.columns([1, 1])
 
 # ------------------------ COLUMNA IZQUIERDA -----------------
 with col_left:
-    st.markdown('<div class="panel">', unsafe_allow_html=True)
     st.markdown(
-        '<div class="panel-title"><span>⚙️</span>Configuración del modelo</div>',
+        '<div class="section-title"><span>⚙️</span>Configuración del modelo</div>',
         unsafe_allow_html=True,
     )
 
@@ -215,13 +205,10 @@ with col_left:
         imagen = Image.open(archivo_imagen).convert("RGB")
         st.image(imagen, caption="Imagen cargada correctamente ✅", use_column_width=True)
 
-    st.markdown("</div>", unsafe_allow_html=True)
-
 # ------------------------ COLUMNA DERECHA -------------------
 with col_right:
-    st.markdown('<div class="panel">', unsafe_allow_html=True)
     st.markdown(
-        '<div class="panel-title"><span>📊</span>Resultados de la predicción</div>',
+        '<div class="section-title"><span>📊</span>Resultados de la predicción</div>',
         unsafe_allow_html=True,
     )
 
@@ -278,7 +265,6 @@ with col_right:
             except Exception as e:
                 st.error(f"Error al realizar la predicción: {e}")
 
-    st.markdown("</div>", unsafe_allow_html=True)
 
 
 
