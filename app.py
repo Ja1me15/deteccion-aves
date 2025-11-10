@@ -162,7 +162,7 @@ st.markdown(
     """
     <div class="header-container">
         <h1>🦜 Detección de Aves</h1>
-        <p>Proyecto con dos modelos de Deep Learning para clasificación de aves.</p>
+        <p>Aplicación de inteligencia artificial para el reconocimiento y estudio de aves representativas del Tolima mediante modelos de Deep Learning..</p>
     </div>
     """,
     unsafe_allow_html=True,
@@ -192,8 +192,6 @@ with col_left:
     except Exception as e:
         st.error(f"Error al cargar el modelo: {e}")
         modelo = None
-
-    st.markdown("---")
     st.subheader("📤 Cargar imagen")
     archivo_imagen = st.file_uploader(
         "Sube una imagen de un ave (JPG o PNG):",
@@ -264,6 +262,7 @@ with col_right:
 
             except Exception as e:
                 st.error(f"Error al realizar la predicción: {e}")
+
 
 
 
