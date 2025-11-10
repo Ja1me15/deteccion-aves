@@ -11,7 +11,7 @@ from tensorflow.keras.applications.vgg16 import preprocess_input as vgg_preproce
 # CONFIGURACIÓN GENERAL
 # ===========================================================
 st.set_page_config(
-    page_title="Detección de Aves 🦜",
+    page_title="PROYECTO FINAL🦜",
     page_icon="🦜",
     layout="wide",
 )
@@ -36,7 +36,6 @@ st.markdown(
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-top: 0; /* 👈 elimina espacio superior extra */
 }
 
 /* Títulos dentro del rectángulo */
@@ -56,8 +55,7 @@ st.markdown(
 /* Contenedor principal (tarjetas) */
 .block-container {
     background-color: rgba(255, 255, 255, 0.1);
-    padding: 1rem 1.5rem 3rem 1.5rem; /* menos padding arriba */
-    margin-top: -1rem; /* 👈 empuja todo hacia arriba */
+    padding: 1.5rem 1.5rem 3rem 1.5rem;
 }
 
 /* Tarjetas */
@@ -146,16 +144,14 @@ def cargar_clases(path: str):
 # ===========================================================
 # CABECERA
 # ===========================================================
-st.markdown("<h1 style='text-align:center; color:white;'>🦜 Detección de Aves</h1>", unsafe_allow_html=True)
+st.markdown("<h1 style='text-align:center; color:white;'>🦜 Predector de Aves</h1>", unsafe_allow_html=True)
 st.markdown(
     "<p style='text-align:center; color:white; font-size:1.1rem;'>"
     "Proyecto con modelos de Deep Learning para clasificación de aves."
     "</p>",
     unsafe_allow_html=True,
 )
-
-# 👇 Eliminado el st.write("") que causaba los botones blancos vacíos
-
+st.write("")
 
 # ===========================================================
 # LAYOUT PRINCIPAL
@@ -246,3 +242,5 @@ with col_right:
                 st.error(f"Error al realizar la predicción: {e}")
 
     st.markdown("</div>", unsafe_allow_html=True)
+
+
