@@ -5,6 +5,10 @@ import streamlit as st
 import tensorflow as tf
 from PIL import Image
 
+# 👇 IMPORTS DE PREPROCESAMIENTO SEGÚN EL MODELO
+from tensorflow.keras.applications.efficientnet import preprocess_input as eff_preprocess
+from tensorflow.keras.applications.vgg16 import preprocess_input as vgg_preprocess
+
 # ===========================================================
 # CONFIGURACIÓN GENERAL DE LA PÁGINA
 # ===========================================================
@@ -90,18 +94,20 @@ h2, h3, h4 {
 # ===========================================================
 # CONFIGURACIÓN DE MODELOS
 # ===========================================================
-# Ajusta las rutas a los nombres REALES de tus archivos .keras
+# Ahora cada modelo indica también qué función de preprocesamiento usa
 MODEL_CONFIG = {
     "EfficientNet B0": {
         "path": "modelos/efficenet.keras",
         "input_size": (224, 224),
+        "preprocess": eff_preprocess,  # 👈 igual que en el entrenamiento
     },
     "VGG16": {
         "path": "modelos/vgg16.keras",
         "input_size": (224, 224),
+        "preprocess": vgg_preprocess,  # 👈 si lo entrenaste con preprocess_input de VGG16
+        # Si VGG16 lo entrenaste con rescale=1/255, cambia esta línea por:
+        # "preprocess": lambda x: x / 255.0,
     },
-    # Si tienes otro modelo, lo agregas aquí:
-    # "Otro modelo": {"path": "modelos/otro_modelo.keras", "input_size": (224, 224)},
 }
 
 CLASS_NAMES_PATH = "class_names.txt"
@@ -122,7 +128,6 @@ def cargar_modelo(nombre_modelo: str):
     if not os.path.exists(model_path):
         raise FileNotFoundError(f"No se encontró el modelo en: {model_path}")
 
-    # Carga tolerante para modelos entrenados en versiones anteriores
     model = tf.keras.models.load_model(
         model_path,
         safe_mode=False,
@@ -218,12 +223,15 @@ with col_right:
                 with st.spinner(f"Cargando modelo {modelo_seleccionado} y realizando predicción…"):
                     # Cargar modelo desde caché
                     modelo = cargar_modelo(modelo_seleccionado)
-                    input_size = MODEL_CONFIG[modelo_seleccionado]["input_size"]
+                    config = MODEL_CONFIG[modelo_seleccionado]
+                    input_size = config["input_size"]
+                    preprocess_fun = config.get("preprocess", lambda x: x / 255.0)
 
-                    # Preprocesar imagen
+                    # Preprocesar imagen (👈 AHORA SIN /255 AQUÍ)
                     img_resized = imagen.resize(input_size)
-                    img_array = np.array(img_resized) / 255.0
+                    img_array = np.array(img_resized, dtype=np.float32)
                     img_array = np.expand_dims(img_array, axis=0)
+                    img_array = preprocess_fun(img_array.copy())
 
                     # Predicción
                     preds = modelo.predict(img_array)[0]  # vector 1D
@@ -239,6 +247,10 @@ with col_right:
                             "Probabilidad": preds,
                         }
                     ).sort_values("Probabilidad", ascending=False)
+
+                    # Mostrar índice interno (útil para debug, puedes comentarlo luego)
+                    # top_index = int(np.argmax(preds))
+                    # st.write("Índice interno predicho:", top_index)
 
                     # Mostrar resultado principal
                     top_row = pred_df.iloc[0]
@@ -261,3 +273,4 @@ with col_right:
                 st.error(f"Error al realizar la predicción: {e}")
 
     st.markdown("</div>", unsafe_allow_html=True)
+
