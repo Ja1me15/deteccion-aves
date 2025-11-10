@@ -1,4 +1,5 @@
 Ochthoeca fumicolor
+Pheugopedius mystacalis
 Aramides cajaneus
 Henicorhina leucophrys
 Phaethornis pretrei
@@ -7,4 +8,4 @@ Cyanocorax yncas
 Fluvicola pica
 Synallaxis albescens
 Thamnophilus multistriatus
-Pheugopedius mystacalis
+
