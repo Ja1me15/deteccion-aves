@@ -31,6 +31,33 @@ st.markdown(
     );
 }
 
+/* Color del texto del caption de las imágenes */
+.stImage > figcaption {
+    color: #000000 !important; /* negro */
+    font-weight: 600;
+    text-align: center;
+}
+
+/* Ajuste del bloque del encabezado */
+.header-container {
+    margin-top: 2rem;       /* baja todo el bloque */
+    margin-bottom: 1rem;    /* espacio con lo que sigue */
+}
+
+/* Título principal */
+.header-container h1 {
+    margin-top: 0.5rem;
+    margin-bottom: 0.3rem;
+    font-size: 2.4rem;      /* puedes ajustar el tamaño */
+}
+
+/* Subtítulo */
+.header-container p {
+    margin-top: 0;
+    font-size: 1.05rem;
+}
+
+
 /* Contenedor principal */
 .block-container {
     background-color: rgba(255, 255, 255, 0.0);
@@ -139,14 +166,16 @@ def cargar_clases(path: str):
 # ===========================================================
 # CABECERA
 # ===========================================================
-st.markdown("<h1>🦜 Detección de Aves</h1>", unsafe_allow_html=True)
 st.markdown(
-    "<p style='text-align:center; color:#FFFFFF; font-size:1.05rem;'>"
-    "Proyecto con dos modelos de Deep Learning para clasificación de aves."
-    "</p>",
+    """
+    <div class="header-container" style="text-align:center;">
+        <h1>🦜 Detección de Aves</h1>
+        <p>Proyecto con dos modelos de Deep Learning para clasificación de aves.</p>
+    </div>
+    """,
     unsafe_allow_html=True,
 )
-st.write("")
+
 
 # ===========================================================
 # LAYOUT PRINCIPAL
@@ -237,3 +266,4 @@ with col_right:
                 except Exception as e:
                     st.error(f"Error al realizar la predicción: {e}")
         st.markdown("</div>", unsafe_allow_html=True)
+
