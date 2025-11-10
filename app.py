@@ -4,13 +4,11 @@ import pandas as pd
 import streamlit as st
 import tensorflow as tf
 from PIL import Image
-
-# 👇 IMPORTS DE PREPROCESAMIENTO SEGÚN EL MODELO
 from tensorflow.keras.applications.efficientnet import preprocess_input as eff_preprocess
 from tensorflow.keras.applications.vgg16 import preprocess_input as vgg_preprocess
 
 # ===========================================================
-# CONFIGURACIÓN GENERAL DE LA PÁGINA
+# CONFIGURACIÓN GENERAL
 # ===========================================================
 st.set_page_config(
     page_title="Detección de Aves 🦜",
@@ -19,72 +17,80 @@ st.set_page_config(
 )
 
 # ===========================================================
-# ESTILO PERSONALIZADO (franja vino tinto arriba + amarillo)
+# ESTILO PERSONALIZADO
 # ===========================================================
 st.markdown(
     """
 <style>
-/* Fondo general con franja vino tinto arriba y resto amarillo */
+/* Fondo principal degradado verde a azul */
 .stApp {
-    background: linear-gradient(
-        180deg,
-        #6D090D 0%,
-        #6D090D 30%,
-        #FCDD09 30%,
-        #FFF9C4 100%
-    );
+    background: linear-gradient(180deg, #80ba26 0%, #00abc8 100%);
 }
 
-/* Contenedor principal */
+/* Rectángulo superior blanco */
+.top-bar {
+    background-color: white;
+    border-radius: 20px;
+    padding: 1.2rem 1.5rem;
+    margin-bottom: 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* Títulos dentro del rectángulo */
+.top-title {
+    font-size: 1.3rem;
+    font-weight: 800;
+    color: #1A1A1A;
+    display: flex;
+    align-items: center;
+}
+
+/* Emoji al lado del título */
+.top-title span {
+    margin-right: 10px;
+}
+
+/* Contenedor principal (tarjetas) */
 .block-container {
-    background-color: rgba(0,0,0,0.00);
+    background-color: rgba(255, 255, 255, 0.1);
     padding: 1.5rem 1.5rem 3rem 1.5rem;
 }
 
-/* Título principal */
-h1 {
-    color: #FFFFFF !important;
-    text-align: center;
-    font-weight: 800;
-}
-
-/* Subtítulos */
-h2, h3, h4 {
-    color: #1A1A1A !important;
-}
-
-/* Tarjetas blancas redondeadas */
+/* Tarjetas */
 .card {
     background-color: #FFFFFF;
     border-radius: 18px;
     padding: 1.5rem;
-    box-shadow: 0 8px 18px rgba(0,0,0,0.12);
+    box-shadow: 0 6px 14px rgba(0,0,0,0.1);
 }
 
-/* Botones principales */
+/* Botones */
 .stButton>button {
-    background-color: #6D090D;
-    color: #FFFFFF;
+    background-color: #00abc8;
+    color: white;
     font-weight: 700;
     border-radius: 999px;
     padding: 0.6rem 1.4rem;
     border: none;
+    transition: all 0.3s ease;
 }
 
 .stButton>button:hover {
-    background-color: #8c1015;
-    color: #FFFFFF;
+    background-color: #80ba26;
+    color: white;
 }
 
-/* Selectbox y file uploader */
+/* Selectbox y FileUploader */
 .stSelectbox > div > div,
 .stFileUploader > div {
-    border-radius: 999px;
+    border-radius: 12px;
 }
 
-/* Mensajes de éxito */
+/* Alertas */
 .stAlert {
-    border-radius: 16px;
+    border-radius: 12px;
 }
 </style>
 """,
@@ -94,19 +100,16 @@ h2, h3, h4 {
 # ===========================================================
 # CONFIGURACIÓN DE MODELOS
 # ===========================================================
-# Ahora cada modelo indica también qué función de preprocesamiento usa
 MODEL_CONFIG = {
     "EfficientNet B0": {
         "path": "modelos/efficenet.keras",
         "input_size": (224, 224),
-        "preprocess": eff_preprocess,  # 👈 igual que en el entrenamiento
+        "preprocess": eff_preprocess,
     },
     "VGG16": {
         "path": "modelos/vgg16.keras",
         "input_size": (224, 224),
-        "preprocess": vgg_preprocess,  # 👈 si lo entrenaste con preprocess_input de VGG16
-        # Si VGG16 lo entrenaste con rescale=1/255, cambia esta línea por:
-        # "preprocess": lambda x: x / 255.0,
+        "preprocess": vgg_preprocess,
     },
 }
 
@@ -115,32 +118,22 @@ CLASS_NAMES_PATH = "class_names.txt"
 
 @st.cache_resource(show_spinner="Cargando modelo seleccionado…")
 def cargar_modelo(nombre_modelo: str):
-    """
-    Carga el modelo .keras usando safe_mode=False (para evitar errores
-    de capas que reciben múltiples tensores) y sin compilar (solo inferencia).
-    """
+    """Carga modelo .keras con safe_mode desactivado"""
     config = MODEL_CONFIG.get(nombre_modelo)
     if config is None:
         raise ValueError(f"No existe configuración para el modelo: {nombre_modelo}")
 
-    model_path = config["path"]
+    path = config["path"]
+    if not os.path.exists(path):
+        raise FileNotFoundError(f"No se encontró el modelo en: {path}")
 
-    if not os.path.exists(model_path):
-        raise FileNotFoundError(f"No se encontró el modelo en: {model_path}")
-
-    model = tf.keras.models.load_model(
-        model_path,
-        safe_mode=False,
-        compile=False,
-    )
+    model = tf.keras.models.load_model(path, safe_mode=False, compile=False)
     return model
 
 
 @st.cache_data
 def cargar_clases(path: str):
-    """
-    Lee el archivo class_names.txt (una clase por línea).
-    """
+    """Lee class_names.txt (una clase por línea)"""
     if not os.path.exists(path):
         raise FileNotFoundError(f"No se encontró el archivo de clases en: {path}")
     with open(path, "r", encoding="utf-8") as f:
@@ -151,32 +144,38 @@ def cargar_clases(path: str):
 # ===========================================================
 # CABECERA
 # ===========================================================
-st.markdown("<h1>🦜 Detección de Aves</h1>", unsafe_allow_html=True)
+st.markdown("<h1 style='text-align:center; color:white;'>🦜 Detección de Aves</h1>", unsafe_allow_html=True)
 st.markdown(
-    "<p style='text-align:center; color:#FFFFFF; font-size:1.05rem;'>"
-    "Proyecto con dos modelos de Deep Learning para clasificación de aves."
+    "<p style='text-align:center; color:white; font-size:1.1rem;'>"
+    "Proyecto con modelos de Deep Learning para clasificación de aves."
     "</p>",
     unsafe_allow_html=True,
 )
-
-st.write("")  # pequeño espacio
+st.write("")
 
 # ===========================================================
 # LAYOUT PRINCIPAL
 # ===========================================================
-col_left, col_right = st.columns([1.1, 1.1])
+col_left, col_right = st.columns([1, 1])
 
 # ------------------------ COLUMNA IZQUIERDA -----------------
 with col_left:
+    st.markdown('<div class="top-bar"><div class="top-title"><span>⚙️</span>Configuración del modelo</div></div>', unsafe_allow_html=True)
     st.markdown('<div class="card">', unsafe_allow_html=True)
-
-    st.subheader("⚙️ Configuración del modelo")
 
     modelo_seleccionado = st.selectbox(
         "Selecciona el modelo:",
         list(MODEL_CONFIG.keys()),
         index=0,
     )
+
+    # Mensaje de modelo cargado exitosamente
+    try:
+        modelo = cargar_modelo(modelo_seleccionado)
+        st.success(f"✅ Modelo **{modelo_seleccionado}** cargado exitosamente.")
+    except Exception as e:
+        st.error(f"Error al cargar el modelo: {e}")
+        modelo = None
 
     st.markdown("---")
 
@@ -189,88 +188,57 @@ with col_left:
     imagen = None
     if archivo_imagen is not None:
         imagen = Image.open(archivo_imagen).convert("RGB")
-        st.image(
-            imagen,
-            caption="Imagen cargada correctamente ✅",
-            use_column_width=True,
-        )
+        st.image(imagen, caption="Imagen cargada correctamente ✅", use_column_width=True)
 
     st.markdown("</div>", unsafe_allow_html=True)
 
 # ------------------------ COLUMNA DERECHA -------------------
 with col_right:
+    st.markdown('<div class="top-bar"><div class="top-title"><span>📊</span>Resultados de la predicción</div></div>', unsafe_allow_html=True)
     st.markdown('<div class="card">', unsafe_allow_html=True)
-    st.subheader("📊 Resultados de la predicción")
 
-    modelo = None
     pred_df = None
 
-    # Cargar clases
     try:
         class_names = cargar_clases(CLASS_NAMES_PATH)
     except Exception as e:
         st.error(f"Error al cargar las clases: {e}")
         class_names = None
 
-    # Botón de predicción
     if st.button("🔍 Clasificar ave", use_container_width=True):
-        if imagen is None:
-            st.warning("Primero sube una imagen para analizar.")
+        if modelo is None:
+            st.warning("Primero selecciona y carga un modelo válido.")
+        elif imagen is None:
+            st.warning("Sube una imagen para analizar.")
         elif class_names is None:
-            st.warning("No se pudieron cargar las clases. Revisa el archivo class_names.txt.")
+            st.warning("No se pudieron cargar las clases.")
         else:
             try:
-                with st.spinner(f"Cargando modelo {modelo_seleccionado} y realizando predicción…"):
-                    # Cargar modelo desde caché
-                    modelo = cargar_modelo(modelo_seleccionado)
+                with st.spinner(f"Realizando predicción con {modelo_seleccionado}…"):
                     config = MODEL_CONFIG[modelo_seleccionado]
-                    input_size = config["input_size"]
                     preprocess_fun = config.get("preprocess", lambda x: x / 255.0)
+                    input_size = config["input_size"]
 
-                    # Preprocesar imagen (👈 AHORA SIN /255 AQUÍ)
                     img_resized = imagen.resize(input_size)
                     img_array = np.array(img_resized, dtype=np.float32)
                     img_array = np.expand_dims(img_array, axis=0)
                     img_array = preprocess_fun(img_array.copy())
 
-                    # Predicción
-                    preds = modelo.predict(img_array)[0]  # vector 1D
-
-                    # Ajustar longitud por si hay desajuste leve
+                    preds = modelo.predict(img_array)[0]
                     n = min(len(preds), len(class_names))
-                    preds = preds[:n]
-                    clases = class_names[:n]
+                    preds, clases = preds[:n], class_names[:n]
 
-                    pred_df = pd.DataFrame(
-                        {
-                            "Especie": clases,
-                            "Probabilidad": preds,
-                        }
-                    ).sort_values("Probabilidad", ascending=False)
-
-                    # Mostrar índice interno (útil para debug, puedes comentarlo luego)
-                    # top_index = int(np.argmax(preds))
-                    # st.write("Índice interno predicho:", top_index)
-
-                    # Mostrar resultado principal
+                    pred_df = pd.DataFrame({"Especie": clases, "Probabilidad": preds}).sort_values("Probabilidad", ascending=False)
                     top_row = pred_df.iloc[0]
-                    st.success(
-                        f"**Ave predicha:** {top_row['Especie']} "
-                        f"con probabilidad {top_row['Probabilidad']*100:.2f}%"
-                    )
 
+                    st.success(f"**Ave predicha:** {top_row['Especie']} con probabilidad {top_row['Probabilidad']*100:.2f}%")
                     st.write("### 🔢 Probabilidades por especie")
-                    st.dataframe(
-                        pred_df.style.format({"Probabilidad": "{:.4f}"}),
-                        use_container_width=True,
-                    )
+                    st.dataframe(pred_df.style.format({"Probabilidad": "{:.4f}"}), use_container_width=True)
 
                     st.write("### 📈 Top 5 clases (gráfico)")
                     top5 = pred_df.head(5).set_index("Especie")
                     st.bar_chart(top5)
-
             except Exception as e:
                 st.error(f"Error al realizar la predicción: {e}")
 
     st.markdown("</div>", unsafe_allow_html=True)
-
