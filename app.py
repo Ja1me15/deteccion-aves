@@ -40,16 +40,6 @@ div[data-testid="stImageCaption"] p,
     font-weight: 600;
     text-align: center;
 }
-/* ================================
-   Ajuste de espaciado entre secciones
-   ================================ */
-div[data-testid="stVerticalBlock"] > div:has(> .stAlert) {
-    margin-bottom: 0.5rem !important; /* reduce el espacio debajo del mensaje verde */
-}
-
-h3, .stMarkdown h3, .stMarkdown h2 {
-    margin-top: 0.5rem !important;  /* reduce espacio antes de “Cargar imagen” */
-}
 
 
 /* Color del texto del caption de las imágenes */
@@ -287,5 +277,6 @@ with col_right:
                 except Exception as e:
                     st.error(f"Error al realizar la predicción: {e}")
         st.markdown("</div>", unsafe_allow_html=True)
+
 
 
