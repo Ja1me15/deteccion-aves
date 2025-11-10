@@ -1,0 +1,29 @@
+
+# Ignorar entorno virtual
+.venv/
+
+# Ignorar cachés y archivos temporales
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Ignorar pesos y modelos grandes
+modelos/*.h5
+modelos/*.hdf5
+modelos/*.keras
+
+# Ignorar archivos de logs o checkpoints
+*.log
+*.ckpt
+*.tmp
+
+# Ignorar configuraciones locales
+.env
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Ignorar archivos de Streamlit temporales
+.streamlit/
