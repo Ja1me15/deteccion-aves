@@ -36,6 +36,7 @@ st.markdown(
     display: flex;
     justify-content: space-between;
     align-items: center;
+    margin-top: 0; /* 👈 elimina espacio superior extra */
 }
 
 /* Títulos dentro del rectángulo */
@@ -55,7 +56,8 @@ st.markdown(
 /* Contenedor principal (tarjetas) */
 .block-container {
     background-color: rgba(255, 255, 255, 0.1);
-    padding: 1.5rem 1.5rem 3rem 1.5rem;
+    padding: 1rem 1.5rem 3rem 1.5rem; /* menos padding arriba */
+    margin-top: -1rem; /* 👈 empuja todo hacia arriba */
 }
 
 /* Tarjetas */
@@ -151,7 +153,9 @@ st.markdown(
     "</p>",
     unsafe_allow_html=True,
 )
-st.write("")
+
+# 👇 Eliminado el st.write("") que causaba los botones blancos vacíos
+
 
 # ===========================================================
 # LAYOUT PRINCIPAL
