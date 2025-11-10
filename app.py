@@ -91,12 +91,14 @@ st.markdown(
     border-radius: 999px;
 }
 
-/* Alertas (modelo cargado, ave predicha) con texto negro */
+/* Alertas (modelo cargado, ave predicha) en negro */
 .stAlert {
     border-radius: 14px;
-    color: #000000 !important;
-    background-color: rgba(255,255,255,0.9);
+    color: #FFFFFF !important;          /* texto blanco */
+    background-color: #000000 !important; /* fondo negro */
+    font-weight: 600;
 }
+
 
 /* Caption de imagen (Imagen cargada correctamente) */
 div[data-testid="stImageCaption"] p,
@@ -162,7 +164,7 @@ st.markdown(
     """
     <div class="header-container">
         <h1>🦜 Detección de Aves</h1>
-        <p>Aplicación de inteligencia artificial para el reconocimiento y estudio de aves representativas del Tolima mediante modelos de Deep Learning..</p>
+        <p>Aplicación de inteligencia artificial para el reconocimiento y estudio de aves representativas del Tolima mediante modelos de Deep Learning.</p>
     </div>
     """,
     unsafe_allow_html=True,
@@ -262,6 +264,7 @@ with col_right:
 
             except Exception as e:
                 st.error(f"Error al realizar la predicción: {e}")
+
 
 
 
