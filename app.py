@@ -40,6 +40,11 @@ div[data-testid="stImageCaption"] p,
     font-weight: 600;
     text-align: center;
 }
+/* Ocultar columnas vacías blancas debajo del título */
+div[data-testid="stHorizontalBlock"] > div:empty {
+    display: none !important;
+}
+
 
 
 /* Color del texto del caption de las imágenes */
@@ -277,6 +282,7 @@ with col_right:
                 except Exception as e:
                     st.error(f"Error al realizar la predicción: {e}")
         st.markdown("</div>", unsafe_allow_html=True)
+
 
 
 
