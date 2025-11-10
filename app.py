@@ -11,7 +11,7 @@ from tensorflow.keras.applications.vgg16 import preprocess_input as vgg_preproce
 # CONFIGURACIÓN GENERAL
 # ===========================================================
 st.set_page_config(
-    page_title="PROYECTO FINAL🦜",
+    page_title="Detección de Aves 🦜",
     page_icon="🦜",
     layout="wide",
 )
@@ -27,43 +27,33 @@ st.markdown(
     background: linear-gradient(180deg, #80ba26 0%, #00abc8 100%);
 }
 
-/* Rectángulo superior blanco */
-.top-bar {
-    background-color: white;
-    border-radius: 20px;
-    padding: 1.2rem 1.5rem;
-    margin-bottom: 1.5rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+/* Contenedor principal */
+.block-container {
+    background-color: rgba(255, 255, 255, 0.1);
+    padding: 1rem 1.5rem 3rem 1.5rem;
 }
 
-/* Títulos dentro del rectángulo */
-.top-title {
+/* Panel blanco (una sola tarjeta por columna) */
+.panel {
+    background-color: #FFFFFF;
+    border-radius: 20px;
+    padding: 1.4rem 1.6rem;
+    box-shadow: 0 6px 14px rgba(0,0,0,0.1);
+    margin-top: 1rem;
+}
+
+/* Cabecera dentro del panel */
+.panel-header {
     font-size: 1.3rem;
     font-weight: 800;
     color: #1A1A1A;
     display: flex;
     align-items: center;
+    margin-bottom: 1rem;
 }
 
-/* Emoji al lado del título */
-.top-title span {
+.panel-header span {
     margin-right: 10px;
-}
-
-/* Contenedor principal (tarjetas) */
-.block-container {
-    background-color: rgba(255, 255, 255, 0.1);
-    padding: 1.5rem 1.5rem 3rem 1.5rem;
-}
-
-/* Tarjetas */
-.card {
-    background-color: #FFFFFF;
-    border-radius: 18px;
-    padding: 1.5rem;
-    box-shadow: 0 6px 14px rgba(0,0,0,0.1);
 }
 
 /* Botones */
@@ -109,7 +99,8 @@ MODEL_CONFIG = {
     "VGG16": {
         "path": "modelos/vgg16.keras",
         "input_size": (224, 224),
-        "preprocess": vgg_preprocess,
+        "preprocess": vgg_preprocess,  # si entrenaste con preprocess_input de VGG16
+        # si fue con rescale=1/255, cambia a: "preprocess": lambda x: x / 255.0,
     },
 }
 
@@ -144,14 +135,13 @@ def cargar_clases(path: str):
 # ===========================================================
 # CABECERA
 # ===========================================================
-st.markdown("<h1 style='text-align:center; color:white;'>🦜 Predector de Aves</h1>", unsafe_allow_html=True)
+st.markdown("<h1 style='text-align:center; color:white;'>🦜 Detección de Aves</h1>", unsafe_allow_html=True)
 st.markdown(
     "<p style='text-align:center; color:white; font-size:1.1rem;'>"
     "Proyecto con modelos de Deep Learning para clasificación de aves."
     "</p>",
     unsafe_allow_html=True,
 )
-st.write("")
 
 # ===========================================================
 # LAYOUT PRINCIPAL
@@ -160,8 +150,8 @@ col_left, col_right = st.columns([1, 1])
 
 # ------------------------ COLUMNA IZQUIERDA -----------------
 with col_left:
-    st.markdown('<div class="top-bar"><div class="top-title"><span>⚙️</span>Configuración del modelo</div></div>', unsafe_allow_html=True)
-    st.markdown('<div class="card">', unsafe_allow_html=True)
+    st.markdown('<div class="panel">', unsafe_allow_html=True)
+    st.markdown('<div class="panel-header"><span>⚙️</span>Configuración del modelo</div>', unsafe_allow_html=True)
 
     modelo_seleccionado = st.selectbox(
         "Selecciona el modelo:",
@@ -194,8 +184,8 @@ with col_left:
 
 # ------------------------ COLUMNA DERECHA -------------------
 with col_right:
-    st.markdown('<div class="top-bar"><div class="top-title"><span>📊</span>Resultados de la predicción</div></div>', unsafe_allow_html=True)
-    st.markdown('<div class="card">', unsafe_allow_html=True)
+    st.markdown('<div class="panel">', unsafe_allow_html=True)
+    st.markdown('<div class="panel-header"><span>📊</span>Resultados de la predicción</div>', unsafe_allow_html=True)
 
     pred_df = None
 
@@ -228,16 +218,26 @@ with col_right:
                     n = min(len(preds), len(class_names))
                     preds, clases = preds[:n], class_names[:n]
 
-                    pred_df = pd.DataFrame({"Especie": clases, "Probabilidad": preds}).sort_values("Probabilidad", ascending=False)
-                    top_row = pred_df.iloc[0]
+                    pred_df = pd.DataFrame(
+                        {"Especie": clases, "Probabilidad": preds}
+                    ).sort_values("Probabilidad", ascending=False)
 
-                    st.success(f"**Ave predicha:** {top_row['Especie']} con probabilidad {top_row['Probabilidad']*100:.2f}%")
+                    top_row = pred_df.iloc[0]
+                    st.success(
+                        f"**Ave predicha:** {top_row['Especie']} "
+                        f"con probabilidad {top_row['Probabilidad']*100:.2f}%"
+                    )
+
                     st.write("### 🔢 Probabilidades por especie")
-                    st.dataframe(pred_df.style.format({"Probabilidad": "{:.4f}"}), use_container_width=True)
+                    st.dataframe(
+                        pred_df.style.format({"Probabilidad": "{:.4f}"}),
+                        use_container_width=True,
+                    )
 
                     st.write("### 📈 Top 5 clases (gráfico)")
                     top5 = pred_df.head(5).set_index("Especie")
                     st.bar_chart(top5)
+
             except Exception as e:
                 st.error(f"Error al realizar la predicción: {e}")
 
