@@ -5,6 +5,9 @@ import streamlit as st
 import tensorflow as tf
 from PIL import Image
 
+# 👇 IMPORTANTE: mismo preprocesamiento que usaste al entrenar EfficientNet
+from tensorflow.keras.applications.efficientnet import preprocess_input as eff_preprocess_input
+
 # ===========================================================
 # CONFIGURACIÓN GENERAL
 # ===========================================================
@@ -94,11 +97,10 @@ st.markdown(
 /* Alertas (modelo cargado, ave predicha) en negro */
 .stAlert {
     border-radius: 14px;
-    color: #FFFFFF !important;          /* texto blanco */
-    background-color: #000000 !important; /* fondo negro */
+    color: #FFFFFF !important;
+    background-color: #000000 !important;
     font-weight: 600;
 }
-
 
 /* Caption de imagen (Imagen cargada correctamente) */
 div[data-testid="stImageCaption"] p,
@@ -123,12 +125,14 @@ div[data-testid="stVerticalBlock"] > div:has(> .stAlert) {
 # ===========================================================
 MODEL_CONFIG = {
     "EfficientNet B0": {
-        "path": "modelos/efficenet.keras",
+        "path": "modelos/efficenet.keras",   # 👈 pon aquí tu best_efficientnetb0_model.keras
         "input_size": (224, 224),
+        "type": "efficientnet",
     },
     "VGG16": {
         "path": "modelos/vgg16.keras",
         "input_size": (224, 224),
+        "type": "vgg",
     },
 }
 
@@ -145,6 +149,7 @@ def cargar_modelo(nombre_modelo: str):
     if not os.path.exists(model_path):
         raise FileNotFoundError(f"No se encontró el modelo en: {model_path}")
 
+    # safe_mode=False para permitir capas personalizadas si las hubiera
     model = tf.keras.models.load_model(model_path, safe_mode=False, compile=False)
     return model
 
@@ -194,6 +199,7 @@ with col_left:
     except Exception as e:
         st.error(f"Error al cargar el modelo: {e}")
         modelo = None
+
     st.subheader("📤 Cargar imagen")
     archivo_imagen = st.file_uploader(
         "Sube una imagen de un ave (JPG o PNG):",
@@ -230,10 +236,21 @@ with col_right:
         else:
             try:
                 with st.spinner(f"Clasificando con {modelo_seleccionado}..."):
-                    input_size = MODEL_CONFIG[modelo_seleccionado]["input_size"]
+                    config = MODEL_CONFIG[modelo_seleccionado]
+                    input_size = config["input_size"]
+                    modelo_tipo = config["type"]
 
+                    # --- Preprocesamiento coherente con el entrenamiento ---
                     img_resized = imagen.resize(input_size)
-                    img_array = np.array(img_resized) / 255.0
+                    img_array = np.array(img_resized).astype("float32")
+
+                    if modelo_tipo == "efficientnet":
+                        # Igual que en el entrenamiento: preprocess_input
+                        img_array = eff_preprocess_input(img_array)
+                    else:  # "vgg"
+                        # Igual que en el entrenamiento de VGG16: /255
+                        img_array = img_array / 255.0
+
                     img_array = np.expand_dims(img_array, axis=0)
 
                     preds = modelo.predict(img_array)[0]
@@ -264,10 +281,5 @@ with col_right:
 
             except Exception as e:
                 st.error(f"Error al realizar la predicción: {e}")
-
-
-
-
-
 
 
